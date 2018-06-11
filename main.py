@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import json
 from student import Student
@@ -23,9 +21,9 @@ def main():
     student = Student(read_secrets())
 
     if is_first_time():
-        student.get_marks()
+        student.scrape_marks()
         student.write_marks_to_file()
-    elif student.marks_has_changed():
+    elif student.marks_have_changed():
         student.notify()
 
 

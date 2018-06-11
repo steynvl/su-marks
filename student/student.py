@@ -21,7 +21,7 @@ class Student:
 
         warnings.filterwarnings('ignore')
 
-    def get_marks(self):
+    def scrape_marks(self):
         browser = RoboBrowser()
         browser.open(self._url)
 
@@ -39,9 +39,9 @@ class Student:
                     data[i + counter].get_text() for counter in range(1, 4)
                 ]
 
-    def marks_has_changed(self):
+    def marks_have_changed(self):
         old_marks = self._read_marks_from_file()
-        self.get_marks()
+        self.scrape_marks()
 
         self._diff = {
             k: self._marks[k] for k in self._marks if self._marks[k] != old_marks[k]
