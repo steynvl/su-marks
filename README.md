@@ -53,6 +53,6 @@ notifcation if your marks have changed.
 
 
 ## License
-This project is licensed under the MIT License - see the [LICENCE.md](LICENCE.md) file for details.
+This project is licensed under the MIT License - see the [LICENCE](LICENCE) file for details.
 
 
