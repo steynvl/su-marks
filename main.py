@@ -15,7 +15,7 @@ def first_time():
 def read_secrets():
     if not file_exists('secrets.json'):
         print('No secrets.json found, template can be found at '
-              'https://github.com/steynvl')
+              'https://github.com/steynvl/su-marks/secrets.json')
         sys.exit(0)
 
     with open('secrets.json', 'r') as secrets:
