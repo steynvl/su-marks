@@ -10,19 +10,23 @@ def is_first_time():
 
 
 def read_secrets():
-    with open('secrets.json', 'r') as secrets:
-        return json.load(secrets)
+    try:
+        file = open('secrets.json', 'r')
+        return json.load(file)
+    except IOError:
+        raise Exception('')
+    finally:
+        file.close()
 
 
 def main():
-    secrets = read_secrets()
-    student = Student(secrets)
+    student = Student(read_secrets())
 
     if is_first_time():
         student.get_marks()
         student.write_marks_to_file()
-    else:
-        pass
+    elif student.marks_has_changed():
+        student.notify()
 
 
 if __name__ == '__main__':
