@@ -17,7 +17,7 @@ class Student:
         self._marks = {}
         self._diff = {}
         self._secrets = secrets
-        self._modules = self._compile_modules()
+        self._re = re.compile(r'^[\w ]+\s+\d+$')
 
         warnings.filterwarnings('ignore')
 
@@ -34,7 +34,7 @@ class Student:
 
         data = soup.find_all('td')
         for i, row in enumerate(data):
-            if self._modules.match(row.get_text()) is not None:
+            if self._re.match(row.get_text()) is not None:
                 self._marks[row.get_text()] = [
                     data[i + counter].get_text() for counter in range(1, 4)
                 ]
@@ -44,39 +44,33 @@ class Student:
         self.scrape_marks()
 
         self._diff = {
-            k: self._marks[k] for k in self._marks if self._marks[k] != old_marks[k]
+            k: self._marks[k] for k in self._marks if k in old_marks and self._marks[k] != old_marks[k]
         }
 
         return len(self._diff) > 0
 
     def notify(self):
-        gmail_address = self._secrets['gmail']
+        from_address = self._secrets['fromGmail']
+        to_address = self._secrets['toGmail']
 
         msg = MIMEMultipart()
-        msg['From'] = gmail_address
-        msg['To'] = gmail_address
+        msg['From'] = from_address
+        msg['To'] = to_address
         msg['Subject'] = 'Your marks have changed.'
 
-        changed_modules = ['{}: PM CM AM\n{}{} {} {}'.format(k,
-                                            ''.ljust(len(k) + 10),
-                                            v[0].rjust(2),
-                                            v[1].rjust(2),
-                                            v[2].rjust(2)) for k, v in self._diff.items()]
+        changed_modules = [
+            '{}\nPM: {}\nCM: {}\nAM: {}\n\n'.format(k, v[0], v[1], v[2]) for k, v in self._diff.items()
+        ]
+        changed_modules = ''.join(changed_modules).rstrip()
 
-        body = '''
-        Hi,
-        
-        Your mark(s) that have changed are:
-        
-        {}
-        '''.format('\n\n\t\t'.join(changed_modules))
+        body = 'Hi, \n\nYour mark(s) that have changed are:\n\n{}'.format(changed_modules)
 
         msg.attach(MIMEText(body, 'plain'))
 
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login(gmail_address, self._secrets['gmailPassword'])
-        server.sendmail(gmail_address, gmail_address, msg.as_string())
+        server.login(from_address, self._secrets['fromGmailPassword'])
+        server.sendmail(from_address, to_address, msg.as_string())
         server.quit()
 
     def write_marks_to_file(self):
@@ -87,9 +81,3 @@ class Student:
     def _read_marks_from_file():
         with open('marks.json', 'r') as f:
             return json.load(f)
-
-    def _compile_modules(self):
-        modules = '|'.join(self._secrets['modules'])
-        codes = '|'.join(self._secrets['codes'])
-
-        return re.compile(r'(?:{})\s+(?:{})'.format(modules, codes))
